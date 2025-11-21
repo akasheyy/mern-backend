@@ -14,24 +14,34 @@ const messageRoutes = require("./routes/messageRoutes");
 
 const app = express();
 
-// -------------------- MIDDLEWARES --------------------
-app.use(cors());
+// -------------------- GLOBAL CORS --------------------
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://mern-frontend-mu-ten.vercel.app"
+    ],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"]
+  })
+);
+
 app.use(express.json());
 
-// serve audio files
+// Static files
 app.use(
   "/uploads/audio",
   express.static(path.join(__dirname, "uploads", "audio"))
 );
 app.use("/uploads1", express.static(path.join(__dirname, "uploads1")));
 
-// -------------------- DATABASE CONNECT --------------------
+// -------------------- DATABASE --------------------
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected Successfully"))
   .catch((err) => console.log("DB Error:", err));
 
-// -------------------- NORMAL ROUTES --------------------
+// -------------------- ROUTES --------------------
 app.get("/", (req, res) => {
   res.send("Backend running...");
 });
@@ -41,20 +51,21 @@ app.use("/api/posts", auth, postRoutes);
 app.use("/api/user", auth, userRoutes);
 app.use("/api/messages", auth, messageRoutes);
 
-// -------------------- SOCKET SERVER SETUP --------------------
+// -------------------- SOCKET SERVER --------------------
+const server = http.createServer(app);
+
 const io = new Server(server, {
   cors: {
     origin: [
       "http://localhost:3000",
       "https://mern-frontend-mu-ten.vercel.app"
     ],
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
   }
 });
 
-
-// make io available inside routes (req.app.get("io"))
+// Make available inside routes
 app.set("io", io);
 
 // -------------------- SOCKET AUTH --------------------
