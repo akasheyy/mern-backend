@@ -42,15 +42,17 @@ app.use("/api/user", auth, userRoutes);
 app.use("/api/messages", auth, messageRoutes);
 
 // -------------------- SOCKET SERVER SETUP --------------------
-const server = http.createServer(app);
-
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: [
+      "http://localhost:3000",
+      "https://mern-frontend-mu-ten.vercel.app"
+    ],
     methods: ["GET", "POST"],
     credentials: true
   }
 });
+
 
 // make io available inside routes (req.app.get("io"))
 app.set("io", io);
